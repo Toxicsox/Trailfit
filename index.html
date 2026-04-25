@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TrailFit — Auckland Hiking Trails</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5-2q8eAZxwiOvbl7q2lr0JBKAsozGs_c&libraries=places&loading=async"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5-2q8eAZxwiOvbl7q2lr0JBKAsozGs_c&libraries=places,maps&loading=async"></script>
 <style>
 :root{--forest:#0f2535;--moss:#1b4d6b;--fern:#2a7a9a;--sage:#6aafc4;--mist:#b8d9e8;--cream:#f0f5f8;--sand:#daeaf2;--stone:#7a9aaa;--cliff:#2a4555;--ocean:#1a6585;--gold:#c8921e;--alert:#c04030}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -132,14 +130,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .map-info{font-size:12px;color:var(--sage)}
 .map-my-location{background:var(--fern);color:#fff;border:none;border-radius:8px;padding:.4rem .8rem;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
 .map-my-location svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2}
-.custom-marker{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:2px solid #fff;font-family:'Fraunces',serif;font-size:11px;font-weight:700;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.marker-moderate{background:#856404}
-.marker-challenging{background:#842029}
-.leaflet-popup-content{font-family:'DM Sans',sans-serif;margin:10px 12px;min-width:180px}
-.leaflet-popup-content .popup-title{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--forest);margin-bottom:2px}
-.leaflet-popup-content .popup-area{font-size:10px;color:var(--stone);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
-.leaflet-popup-content .popup-meta{font-size:11px;color:var(--cliff);margin-bottom:6px}
-.leaflet-popup-content .popup-btn{background:var(--fern);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.gm-popup{font-family:'DM Sans',sans-serif;min-width:180px;padding:2px 4px}
+.gm-popup .popup-title{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--forest);margin-bottom:2px}
+.gm-popup .popup-area{font-size:10px;color:var(--stone);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.gm-popup .popup-meta{font-size:11px;color:var(--cliff);margin-bottom:6px}
+.gm-popup .popup-btn{background:var(--fern);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.map-legend{background:rgba(15,37,53,.92);color:#b8d9e8;padding:8px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:10px;line-height:1.6;margin:10px}
 
 /* GPS tracking overlay */
 .gps-overlay{position:fixed;bottom:0;left:0;right:0;background:var(--forest);color:var(--mist);padding:1rem 1.25rem;z-index:500;display:none;box-shadow:0 -4px 12px rgba(0,0,0,.3)}
@@ -285,7 +281,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
     </div>
     <div class="about-section"><div class="about-section-title">About</div><p class="about-text">35+ curated trails within 90 minutes of Browns Bay. Browse by type, view on the map, get weather-aware Sunday suggestions, and track your hikes with live GPS.</p></div>
     <div class="about-section"><div class="about-section-title">Live GPS tracking</div><p class="about-text">Tap "Start GPS tracking" on any trail to record distance, time and route as you walk. Stats save to your hike log. Your location stays on your device — nothing is sent anywhere.</p></div>
-    <div class="about-section"><div class="about-section-title">Map</div><p class="about-text">Interactive map powered by OpenStreetMap via Leaflet. Tap pins to view trails, tap "Find me" to see your current location.</p></div>
+    <div class="about-section"><div class="about-section-title">Map</div><p class="about-text">Interactive map powered by Google Maps. Tap pins to view trails, switch between road, terrain, satellite and hybrid views, and tap "Find me" to see your current location.</p></div>
     <div class="about-section"><div class="about-section-title">Sunday suggestion</div><p class="about-text">Picks a trail each week based on Sunday weather, how recently you've done each trail, and your fitness level.</p></div>
     <div class="about-section"><div class="about-section-title">Fitness progression</div><p class="about-text">Three levels: Explorer → Trekker → Summit Seeker. Challenging trails unlock as you build fitness.</p></div>
     <div class="about-section"><div class="about-section-title">Weather</div><p class="about-text">Forecasts from <a class="about-link" href="https://open-meteo.com" target="_blank">Open-Meteo</a>. Zones: Waitākere, Tāwharanui/North, North Shore, Hunua.</p></div>
@@ -663,79 +659,156 @@ function logFromModal(){
 }
 
 // ── MAP ──
+let infoWindow=null;
+let markers=[];
+let gpsPolylines=[];
+
+// Build a colored circular SVG marker icon for Google Maps
+function makeMarkerIcon(difficulty){
+  const fill=difficulty==='challenging'?'#842029':'#856404';
+  const letter=difficulty==='challenging'?'C':'M';
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="13" fill="${fill}" stroke="#fff" stroke-width="2.5"/>
+    <text x="16" y="21" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#fff">${letter}</text>
+  </svg>`;
+  return{
+    url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),
+    scaledSize:new google.maps.Size(32,32),
+    anchor:new google.maps.Point(16,16)
+  };
+}
+
 function initMap(){
   if(map)return;
-  map=L.map('trails-map').setView([-36.75,174.7],10);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:18,
-    attribution:'© OpenStreetMap contributors'
-  }).addTo(map);
+  // Center on Browns Bay (your home base)
+  map=new google.maps.Map(document.getElementById('trails-map'),{
+    center:{lat:-36.7180,lng:174.7480},
+    zoom:11,
+    mapTypeControl:true,
+    mapTypeControlOptions:{
+      style:google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+      position:google.maps.ControlPosition.TOP_RIGHT,
+      mapTypeIds:['roadmap','terrain','satellite','hybrid']
+    },
+    streetViewControl:true,
+    fullscreenControl:false,
+    zoomControl:true,
+    mapTypeId:'terrain'
+  });
 
-  // Draw all trail routes as colored lines
+  infoWindow=new google.maps.InfoWindow();
+
+  // Draw all trail routes as colored polylines
   trails.forEach(t=>{
     const route=trailRoutes[t.id];
     if(route&&route.length>1){
       const color=t.difficulty==='challenging'?'#842029':'#b88020';
-      const line=L.polyline(route,{color,weight:3,opacity:0.7,dashArray:null}).addTo(map);
+      const path=route.map(p=>({lat:p[0],lng:p[1]}));
+      const line=new google.maps.Polyline({
+        path,
+        geodesic:true,
+        strokeColor:color,
+        strokeOpacity:0.75,
+        strokeWeight:3,
+        map
+      });
       routeLines[t.id]=line;
     }
   });
 
-  // Draw GPS-recorded routes from user's log (darker blue)
+  // Draw GPS-recorded routes from user's log (dashed blue)
   hikeLog.forEach(entry=>{
     if(entry.gpsPoints&&entry.gpsPoints.length>1){
-      L.polyline(entry.gpsPoints,{color:'#1a6585',weight:4,opacity:0.9,dashArray:'5,5'}).addTo(map);
+      const path=entry.gpsPoints.map(p=>({lat:p[0],lng:p[1]}));
+      // Dashed line via repeated symbols
+      const dashSymbol={
+        path:'M 0,-1 0,1',
+        strokeOpacity:1,
+        strokeColor:'#1a6585',
+        scale:3
+      };
+      const gpsLine=new google.maps.Polyline({
+        path,
+        strokeOpacity:0,
+        icons:[{icon:dashSymbol,offset:'0',repeat:'10px'}],
+        strokeWeight:4,
+        map
+      });
+      gpsPolylines.push(gpsLine);
     }
   });
 
   // Draw trail markers on top of routes
   trails.forEach(t=>{
-    const icon=L.divIcon({
-      className:'',
-      html:`<div class="custom-marker marker-${t.difficulty}">${t.difficulty==='moderate'?'M':'C'}</div>`,
-      iconSize:[28,28],
-      iconAnchor:[14,14]
+    const marker=new google.maps.Marker({
+      position:{lat:t.lat,lng:t.lon},
+      map,
+      icon:makeMarkerIcon(t.difficulty),
+      title:t.name
     });
-    const m=L.marker([t.lat,t.lon],{icon}).addTo(map);
     const done=hikeLog.filter(e=>e.trailId===t.id).length;
-    m.bindPopup(`
+    const popupHtml=`<div class="gm-popup">
       <div class="popup-title">${t.name}</div>
       <div class="popup-area">${t.area} · ${t.drive}</div>
       <div class="popup-meta">${t.duration} · ${t.distance} · ${t.elevation}${done>0?` · ${done}× done`:''}</div>
       <button class="popup-btn" onclick="openTrail('${t.id}')">Details</button>
-    `);
-    // On hover/click — highlight the route
-    m.on('mouseover',()=>{
+    </div>`;
+    marker.addListener('click',()=>{
+      infoWindow.setContent(popupHtml);
+      infoWindow.open(map,marker);
+      // Highlight this trail's route
       if(routeLines[t.id]){
-        if(activeRouteLine)activeRouteLine.setStyle({weight:3,opacity:0.7});
-        routeLines[t.id].setStyle({weight:5,opacity:1});
+        if(activeRouteLine&&activeRouteLine!==routeLines[t.id]){
+          activeRouteLine.setOptions({strokeWeight:3,strokeOpacity:0.75});
+        }
+        routeLines[t.id].setOptions({strokeWeight:5,strokeOpacity:1});
         activeRouteLine=routeLines[t.id];
       }
     });
+    marker.addListener('mouseover',()=>{
+      if(routeLines[t.id]&&routeLines[t.id]!==activeRouteLine){
+        routeLines[t.id].setOptions({strokeWeight:5,strokeOpacity:1});
+      }
+    });
+    marker.addListener('mouseout',()=>{
+      if(routeLines[t.id]&&routeLines[t.id]!==activeRouteLine){
+        routeLines[t.id].setOptions({strokeWeight:3,strokeOpacity:0.75});
+      }
+    });
+    markers.push(marker);
   });
 
-  // Legend
-  const legend=L.control({position:'bottomright'});
-  legend.onAdd=function(){
-    const div=L.DomUtil.create('div','map-legend');
-    div.innerHTML=`<div style="background:rgba(15,37,53,.92);color:#b8d9e8;padding:8px 10px;border-radius:8px;font-family:'DM Sans';font-size:10px;line-height:1.6">
-      <div><span style="display:inline-block;width:14px;height:3px;background:#b88020;margin-right:6px;vertical-align:middle"></span>Moderate route</div>
-      <div><span style="display:inline-block;width:14px;height:3px;background:#842029;margin-right:6px;vertical-align:middle"></span>Challenging route</div>
-      <div><span style="display:inline-block;width:14px;height:3px;background:#1a6585;margin-right:6px;vertical-align:middle"></span>Your GPS tracks</div>
-    </div>`;
-    return div;
-  };
-  legend.addTo(map);
+  // Add a legend in the bottom-right
+  const legendDiv=document.createElement('div');
+  legendDiv.className='map-legend';
+  legendDiv.innerHTML=`
+    <div><span style="display:inline-block;width:14px;height:3px;background:#b88020;margin-right:6px;vertical-align:middle"></span>Moderate route</div>
+    <div><span style="display:inline-block;width:14px;height:3px;background:#842029;margin-right:6px;vertical-align:middle"></span>Challenging route</div>
+    <div><span style="display:inline-block;width:14px;height:3px;background:#1a6585;margin-right:6px;vertical-align:middle"></span>Your GPS tracks</div>`;
+  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legendDiv);
 }
 
 function locateMe(){
   if(!navigator.geolocation){alert('Location not supported on this device.');return}
   navigator.geolocation.getCurrentPosition(pos=>{
     const{latitude,longitude}=pos.coords;
-    if(userMarker)map.removeLayer(userMarker);
-    userMarker=L.circleMarker([latitude,longitude],{radius:8,color:'#fff',weight:2,fillColor:'#2a7a9a',fillOpacity:1}).addTo(map);
-    userMarker.bindPopup('You are here').openPopup();
-    map.setView([latitude,longitude],13);
+    const userPos={lat:latitude,lng:longitude};
+    if(userMarker)userMarker.setMap(null);
+    userMarker=new google.maps.Marker({
+      position:userPos,
+      map,
+      icon:{
+        path:google.maps.SymbolPath.CIRCLE,
+        scale:8,
+        fillColor:'#2a7a9a',
+        fillOpacity:1,
+        strokeColor:'#fff',
+        strokeWeight:2
+      },
+      title:'You are here'
+    });
+    map.panTo(userPos);
+    map.setZoom(13);
   },err=>{alert('Could not get your location: '+err.message)});
 }
 
@@ -792,8 +865,15 @@ function stopTracking(){
     hikeLog.push({trailId:tracking.trailId,date:new Date().toISOString().split('T')[0],notes:`GPS tracked`,gpsDistance:dist,gpsMinutes:mins,gpsPoints:tracking.points.length>1?tracking.points:null,id:Date.now()});
     localStorage.setItem('trailfit-log',JSON.stringify(hikeLog));
     renderLog();renderTrails();computeSuggestion();
-    // Reset map so new GPS track shows
-    if(map){map.remove();map=null;routeLines={};activeRouteLine=null;}
+    // Clear existing map elements so the new GPS track gets drawn on next view
+    if(map){
+      markers.forEach(m=>m.setMap(null));
+      Object.values(routeLines).forEach(l=>l.setMap(null));
+      gpsPolylines.forEach(l=>l.setMap(null));
+      if(userMarker)userMarker.setMap(null);
+      markers=[];routeLines={};gpsPolylines=[];activeRouteLine=null;userMarker=null;
+      map=null;
+    }
   }
   tracking={active:false,watchId:null,points:[],startTime:null,trailId:null,distance:0,timer:null};
   document.getElementById('gps-overlay').classList.remove('active');
@@ -847,7 +927,7 @@ function showPage(name){
   document.getElementById('page-'+name).classList.add('active');
   document.querySelector(`.nav-tab[onclick="showPage('${name}')"]`).classList.add('active');
   if(name==='log')renderLog();
-  if(name==='map'){setTimeout(()=>{initMap();if(map){map.invalidateSize();map.setView([-36.75,174.7],10);}},300)}
+  if(name==='map'){setTimeout(()=>{initMap();if(map){google.maps.event.trigger(map,'resize');map.setCenter({lat:-36.7180,lng:174.7480});map.setZoom(11);}},300)}
 }
 
 document.getElementById('filter-bar').addEventListener('click',e=>{
