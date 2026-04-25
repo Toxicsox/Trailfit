@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TrailFit — Auckland Hiking Trails</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 :root{--forest:#0f2535;--moss:#1b4d6b;--fern:#2a7a9a;--sage:#6aafc4;--mist:#b8d9e8;--cream:#f0f5f8;--sand:#daeaf2;--stone:#7a9aaa;--cliff:#2a4555;--ocean:#1a6585;--gold:#c8921e;--alert:#c04030}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -13,10 +15,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .logo{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--mist);letter-spacing:-.5px}
 .logo span{color:var(--sage)}
 .nav-tabs{display:flex}
-.nav-tab{background:none;border:none;color:var(--stone);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:0 .875rem;height:54px;cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.03em}
+.nav-tab{background:none;border:none;color:var(--stone);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:0 .75rem;height:54px;cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.03em}
 .nav-tab.active{color:var(--mist);border-bottom-color:var(--sage)}
 .page{display:none}.page.active{display:block}
-.weather-banner{background:var(--forest);color:var(--mist);padding:.875rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.07)}
+.weather-banner{background:var(--forest);color:var(--mist);padding:.75rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.07)}
 .weather-label{font-family:'Fraunces',serif;font-size:12px;font-weight:300;font-style:italic;color:var(--sage);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
 .weather-zones{display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center}
 .weather-zone{display:flex;align-items:center;gap:6px;font-size:12px}
@@ -31,10 +33,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .suggest-trail{font-family:'Fraunces',serif;font-size:16px;font-weight:500;color:var(--cream)}
 .suggest-reason{font-size:11px;color:var(--mist);opacity:.8;margin-top:1px}
 .suggest-arrow{color:var(--sage);font-size:20px;flex-shrink:0}
-.hero{background:var(--moss);padding:1.5rem 1.25rem 1.25rem;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:rgba(90,122,66,.25);border-radius:50%}
-.hero-eyebrow{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);margin-bottom:.375rem}
-.hero-title{font-family:'Fraunces',serif;font-size:24px;font-weight:500;color:var(--cream);line-height:1.2;margin-bottom:.375rem}
+.hero{background:var(--moss);padding:1.25rem 1.25rem 1rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:rgba(106,175,196,.2);border-radius:50%}
+.hero-eyebrow{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);margin-bottom:.25rem}
+.hero-title{font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:var(--cream);line-height:1.2;margin-bottom:.25rem}
 .hero-sub{font-size:12px;color:var(--mist);opacity:.8}
 .filter-bar{padding:.75rem 1.25rem;background:var(--sand);border-bottom:1px solid rgba(0,0,0,.06);display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .filter-bar::-webkit-scrollbar{display:none}
@@ -67,7 +69,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .notice-info{background:#e8f0ff;border:1px solid #b0c0e0;color:#2a4080}
 .notice a{color:var(--ocean)}
 .notice svg{flex-shrink:0;margin-top:1px}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--cream);border-radius:20px 20px 0 0;padding:1.375rem 1.25rem;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;animation:slideUp .22s ease}
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -89,10 +91,44 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .modal-actions{display:flex;flex-direction:column;gap:7px}
 .btn-primary{background:var(--fern);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;width:100%}
 .btn-primary:hover{background:var(--moss)}
+.btn-gps{background:var(--alert);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-gps svg{width:15px;height:15px;fill:#fff}
 .btn-map{background:var(--ocean);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
 .btn-map svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2}
 .btn-secondary{background:#fff;color:var(--cliff);border:1px solid rgba(0,0,0,.12);border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;width:100%}
 .btn-secondary:hover{background:var(--sand)}
+
+/* Map page */
+#map-page{height:calc(100vh - 54px);display:none;flex-direction:column}
+#map-page.active{display:flex}
+#trails-map{flex:1;width:100%}
+.map-controls{background:var(--forest);color:var(--mist);padding:.75rem 1.25rem;display:flex;gap:8px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.07)}
+.map-info{font-size:12px;color:var(--sage)}
+.map-my-location{background:var(--fern);color:#fff;border:none;border-radius:8px;padding:.4rem .8rem;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.map-my-location svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2}
+.custom-marker{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:2px solid #fff;font-family:'Fraunces',serif;font-size:11px;font-weight:700;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.marker-moderate{background:#856404}
+.marker-challenging{background:#842029}
+.leaflet-popup-content{font-family:'DM Sans',sans-serif;margin:10px 12px;min-width:180px}
+.leaflet-popup-content .popup-title{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--forest);margin-bottom:2px}
+.leaflet-popup-content .popup-area{font-size:10px;color:var(--stone);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.leaflet-popup-content .popup-meta{font-size:11px;color:var(--cliff);margin-bottom:6px}
+.leaflet-popup-content .popup-btn{background:var(--fern);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* GPS tracking overlay */
+.gps-overlay{position:fixed;bottom:0;left:0;right:0;background:var(--forest);color:var(--mist);padding:1rem 1.25rem;z-index:500;display:none;box-shadow:0 -4px 12px rgba(0,0,0,.3)}
+.gps-overlay.active{display:block}
+.gps-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem}
+.gps-label{font-family:'Fraunces',serif;font-size:11px;font-style:italic;color:var(--sage);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+.gps-pulse{width:8px;height:8px;background:#ff4040;border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.gps-stop{background:var(--alert);color:#fff;border:none;border-radius:8px;padding:.3rem .8rem;font-size:12px;font-weight:500;cursor:pointer}
+.gps-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gps-stat{text-align:center}
+.gps-stat-val{font-family:'Fraunces',serif;font-size:20px;font-weight:500;color:var(--cream)}
+.gps-stat-label{font-size:10px;color:var(--stone);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+/* Progress, log, about sections */
 .progress-section{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:1rem;margin-bottom:1rem}
 .progress-title{font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:var(--forest);margin-bottom:.625rem}
 .progress-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:.375rem}
@@ -114,8 +150,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .log-entry-name{font-family:'Fraunces',serif;font-size:13px;font-weight:500;color:var(--forest)}
 .log-entry-date{font-size:11px;color:var(--stone);margin-top:1px}
 .log-entry-notes{font-size:11px;color:var(--cliff);margin-top:2px;font-style:italic}
+.log-entry-gps{font-size:10px;color:var(--fern);margin-top:2px;font-weight:500}
 .log-remove{margin-left:auto;background:none;border:none;color:var(--stone);cursor:pointer;padding:4px;border-radius:6px;flex-shrink:0}
-.log-remove:hover{color:var(--alert)}
 .log-remove svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;display:block}
 .log-form{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:.875rem;margin-bottom:1.125rem}
 .log-form-title{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--forest);margin-bottom:.75rem}
@@ -130,7 +166,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .about-text{font-size:12px;color:var(--cliff);line-height:1.65}
 .about-link{color:var(--ocean);text-decoration:none}
 @media(min-width:600px){
-  .hero{padding:2rem 2rem 1.5rem}.hero-title{font-size:30px}
+  .hero{padding:1.5rem 2rem 1.25rem}.hero-title{font-size:28px}
   .trails-container,.log-container,.about-container{padding:1.375rem 2rem}
   .filter-bar,.weather-banner{padding:.875rem 2rem}
 }
@@ -141,7 +177,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
   <div class="logo">Trail<span>Fit</span></div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('trails')">Trails</button>
-    <button class="nav-tab" onclick="showPage('log')">My Log</button>
+    <button class="nav-tab" onclick="showPage('map')">Map</button>
+    <button class="nav-tab" onclick="showPage('log')">Log</button>
     <button class="nav-tab" onclick="showPage('about')">About</button>
   </nav>
 </header>
@@ -164,25 +201,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
   </div>
   <div class="hero">
     <div class="hero-eyebrow">Browns Bay · Auckland, NZ</div>
-    <div class="hero-title">Find your next<br>Sunday trail</div>
-    <div class="hero-sub">Moderate to challenging · 1–3 hrs · Scenic &amp; wild</div>
+    <div class="hero-title">Find your next Sunday trail</div>
+    <div class="hero-sub">35+ trails within 90 min · All difficulty levels · Scenic &amp; wild</div>
   </div>
   <div class="filter-bar" id="filter-bar">
-    <button class="filter-chip active" data-filter="all">All trails</button>
+    <button class="filter-chip active" data-filter="all">All</button>
+    <button class="filter-chip" data-filter="nearby">Nearest first</button>
     <button class="filter-chip" data-filter="coastal">Coastal</button>
     <button class="filter-chip" data-filter="bush">Bush</button>
-    <button class="filter-chip" data-filter="views">Scenic views</button>
+    <button class="filter-chip" data-filter="views">Views</button>
+    <button class="filter-chip" data-filter="waterfall">Waterfalls</button>
     <button class="filter-chip" data-filter="challenging">Challenging</button>
     <button class="filter-chip" data-filter="moderate">Moderate</button>
-    <button class="filter-chip" data-filter="nearby">Nearby first</button>
   </div>
-  <div style="padding:.875rem 1.25rem 0;max-width:900px;margin:0 auto">
+  <div style="padding:.75rem 1.25rem 0">
     <div class="notice notice-warn">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#856404" stroke-width="1.8"><circle cx="8" cy="8" r="7"/><path d="M8 5v3.5"/><circle cx="8" cy="11.5" r=".5" fill="#856404"/></svg>
       <span>Some Waitākere and Hunua tracks may be closed due to <a class="about-link" href="https://www.aucklandcouncil.govt.nz/environment/plants-animals/protect-trees-disease/protect-our-kauri-trees/Pages/default.aspx" target="_blank">Kauri Dieback disease</a>. Always check before you go.</span>
     </div>
   </div>
   <div class="trails-container" id="trails-container"></div>
+</div>
+
+<div id="page-map" class="page">
+  <div class="map-controls">
+    <span class="map-info">All trails · tap a pin for details</span>
+    <button class="map-my-location" onclick="locateMe()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Find me</button>
+  </div>
+  <div id="trails-map"></div>
 </div>
 
 <div id="page-log" class="page">
@@ -207,10 +253,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
       <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:var(--forest);margin-bottom:.2rem">TrailFit</div>
       <div style="font-size:12px;color:var(--stone)">Your Auckland hiking companion · Browns Bay</div>
     </div>
-    <div class="about-section"><div class="about-section-title">About</div><p class="about-text">Built for Sunday hiking adventures — one place to find moderate-to-challenging trails within an hour of Browns Bay. No more cross-referencing websites every Saturday night.</p></div>
-    <div class="about-section"><div class="about-section-title">Sunday suggestion</div><p class="about-text">Picks a trail each week based on the Sunday weather forecast, how recently you've done each trail, and your fitness progression. Avoids repeating trails done in the last 4 weeks.</p></div>
-    <div class="about-section"><div class="about-section-title">Fitness progression</div><p class="about-text">Three levels: Explorer → Trekker → Summit Seeker. As you log more hikes, challenging trails unlock. The app tracks your progress and highlights what you're ready for next.</p></div>
-    <div class="about-section"><div class="about-section-title">Weather</div><p class="about-text">Sunday forecasts from <a class="about-link" href="https://open-meteo.com" target="_blank">Open-Meteo</a> — free, no API key needed. Shows conditions for Waitākere, Tāwharanui/North, North Shore, and Hunua zones.</p></div>
+    <div class="about-section"><div class="about-section-title">About</div><p class="about-text">35+ curated trails within 90 minutes of Browns Bay. Browse by type, view on the map, get weather-aware Sunday suggestions, and track your hikes with live GPS.</p></div>
+    <div class="about-section"><div class="about-section-title">Live GPS tracking</div><p class="about-text">Tap "Start GPS tracking" on any trail to record distance, time and route as you walk. Stats save to your hike log. Your location stays on your device — nothing is sent anywhere.</p></div>
+    <div class="about-section"><div class="about-section-title">Map</div><p class="about-text">Interactive map powered by OpenStreetMap via Leaflet. Tap pins to view trails, tap "Find me" to see your current location.</p></div>
+    <div class="about-section"><div class="about-section-title">Sunday suggestion</div><p class="about-text">Picks a trail each week based on Sunday weather, how recently you've done each trail, and your fitness level.</p></div>
+    <div class="about-section"><div class="about-section-title">Fitness progression</div><p class="about-text">Three levels: Explorer → Trekker → Summit Seeker. Challenging trails unlock as you build fitness.</p></div>
+    <div class="about-section"><div class="about-section-title">Weather</div><p class="about-text">Forecasts from <a class="about-link" href="https://open-meteo.com" target="_blank">Open-Meteo</a>. Zones: Waitākere, Tāwharanui/North, North Shore, Hunua.</p></div>
     <div class="about-section"><div class="about-section-title">Track conditions</div>
       <p class="about-text">Always check before heading out:</p>
       <ul style="margin-top:.4rem;padding-left:1.125rem;font-size:12px;color:var(--cliff);line-height:1.9">
@@ -226,27 +274,68 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
   <div class="modal"><div class="modal-handle"></div><div id="modal-body"></div></div>
 </div>
 
+<div class="gps-overlay" id="gps-overlay">
+  <div class="gps-top">
+    <span class="gps-label"><span class="gps-pulse"></span>Tracking · <span id="gps-trail-name"></span></span>
+    <button class="gps-stop" onclick="stopTracking()">Stop &amp; save</button>
+  </div>
+  <div class="gps-stats">
+    <div class="gps-stat"><div class="gps-stat-val" id="gps-distance">0.00</div><div class="gps-stat-label">km</div></div>
+    <div class="gps-stat"><div class="gps-stat-val" id="gps-time">0:00</div><div class="gps-stat-label">elapsed</div></div>
+    <div class="gps-stat"><div class="gps-stat-val" id="gps-pace">—</div><div class="gps-stat-label">min/km</div></div>
+  </div>
+</div>
+
 <script>
+// ── TRAIL DATA (accurate coordinates from Google Places) ──
 const trails=[
-  {id:'longbay_okura',name:'Long Bay – Okura Track',area:'North Shore',drive:'~15 min',driveMin:15,difficulty:'moderate',duration:'2–2.5 hrs',distance:'8 km',elevation:'247 m',tags:['coastal','views'],zone:'auckland',parking:'Large car park at 1043 Beach Rd, Long Bay. Playground and toilets on site.',tip:'At low tide you can return along the beach — check tide times before you go.',desc:'Right on your doorstep. Clifftop coastal walk through Long Bay Regional Park with stunning Hauraki Gulf views. Well-maintained track with benches. The closest proper hike to Browns Bay.',lat:-36.6831,lon:174.7606},
-  {id:'longbay_coastal',name:'Long Bay Coastal Walk',area:'North Shore',drive:'~15 min',driveMin:15,difficulty:'moderate',duration:'1.5–2 hrs',distance:'6 km',elevation:'120 m',tags:['coastal','views'],zone:'auckland',parking:'Long Bay Regional Park car park, Beach Rd. Large free car park with toilets.',tip:'Good option after rain when west coast tracks are muddy. Can return via the beach at low tide.',desc:'Classic North Shore coastal walk from Long Bay along cliff-tops with great sea views. Multiple beach access points. An easy drive from Browns Bay — perfect for a relaxed Sunday morning.',lat:-36.6873,lon:174.7617},
-  {id:'shakespear',name:'Shakespear Regional Park Loop',area:'Whangaparaoa',drive:'~30 min',driveMin:30,difficulty:'moderate',duration:'1.5–2.5 hrs',distance:'7 km',elevation:'200 m',tags:['coastal','views','bush'],zone:'auckland',parking:'Main car park off Whangaparaoa Rd at the park entrance. Free.',tip:'Best tackled at low tide. Arrive early on weekends — the car park fills up fast.',desc:'Forested peninsula walk with ocean views on multiple sides. Traces the park perimeter through native bush, open headlands and beach spots. A local favourite close to home.',lat:-36.6037,lon:174.8069},
-  {id:'wenderholm',name:'Wenderholm Perimeter Track',area:'Wenderholm',drive:'~40 min',driveMin:40,difficulty:'moderate',duration:'1.5 hrs',distance:'4.6 km',elevation:'150 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Wenderholm Regional Park car park off Riverside Road, Waiwera. Free.',tip:'Pass the historic Couldrey House early on. The steep section near the summit rewards with sweeping coastal views.',desc:'Loop around a sacred Māori headland beside the Pūhoi River. Mix of boardwalk, bush track and open ridge with views over the harbour and gulf. Rich in history and natural beauty.',lat:-36.5614,lon:174.7083},
-  {id:'tehenga',name:'Te Henga Walkway',area:'Waitākere Ranges',drive:'~40 min',driveMin:40,difficulty:'moderate',duration:'2–3 hrs',distance:'6 km',elevation:'280 m',tags:['coastal','views','bush'],zone:'waitakere',parking:'Constable Road, Te Henga (Bethells Beach area). Small free car park.',tip:'Check closures before going — some sections affected by 2023 storm slips. Start from Constable Road for the currently open section.',desc:'Part of the Hillary Trail. Rugged coastal and bush scenery with views stretching north to Muriwai and south to Bethells. Wild and quieter than the busier Piha-area tracks.',lat:-36.8997,lon:174.4558,warning:true},
-  {id:'mercer',name:'Mercer Bay Loop',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'moderate',duration:'50–80 min',distance:'2.7 km',elevation:'176 m',tags:['coastal','views'],zone:'waitakere',parking:'Karekare car park off Karekare Road. Can fill by 9am on sunny weekends — go early.',tip:"Auckland's highest-rated trail (AllTrails 4.8 stars). Can be combined with Comans Track for a longer outing.",desc:'Dramatic clifftop loop above Piha with sweeping Tasman Sea views. Short and spectacular. Perfect when you want epic scenery without the full commitment.',lat:-36.9586,lon:174.4847,warning:true},
-  {id:'comans',name:'Comans Track + Mercer Bay',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'moderate',duration:'2–2.5 hrs',distance:'7.2 km',elevation:'300 m',tags:['bush','coastal','views'],zone:'waitakere',parking:'Watchmans Rd car park or Karekare car park. Both free.',tip:'The most popular trail combination in the Waitākere Ranges. Native bush section is beautiful and well-maintained.',desc:'Extended loop combining dense native bush with the Mercer Bay clifftop. Gets the best of both worlds — forest immersion and coastal drama in one outing.',lat:-36.9550,lon:174.4780,warning:true},
-  {id:'lionrock',name:'Lion Rock, Piha',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'challenging',duration:'30–45 min',distance:'1.2 km',elevation:'165 m',tags:['coastal','views'],zone:'waitakere',parking:'Piha Beach car park. Very busy on weekends — arrive before 9am.',tip:'Best paired with another Piha walk. Short and sharp. Slippery when wet — take care on the descent.',desc:"Auckland's most iconic rock. Short steep volcanic climb above Piha Beach with 360° coastal views from the summit. Great on its own or as a warm-up to another Piha trail.",lat:-36.9567,lon:174.4664,warning:true},
-  {id:'anawhata',name:'Anawhata Beach Track',area:'Waitākere Ranges',drive:'~50 min',driveMin:50,difficulty:'challenging',duration:'1–1.5 hrs',distance:'3 km',elevation:'180 m',tags:['coastal','bush'],zone:'waitakere',parking:'End of Anawhata Road. Small gravel car park. Very remote — no facilities.',tip:'The climb back up is the real workout. Bring extra water. One of the quietest beaches on the west coast.',desc:'Steep descent through native bush to a secluded rugged black-sand beach. Virtually no crowds. The climb back makes this deceptively tough. Wild and very rewarding.',lat:-36.9264,lon:174.4419,warning:true},
-  {id:'donald',name:'Mt Donald McLean',area:'Waitākere Ranges',drive:'~50 min',driveMin:50,difficulty:'challenging',duration:'2–3 hrs',distance:'6 km',elevation:'400 m',tags:['bush','views'],zone:'waitakere',parking:'Karamatura Valley car park off Huia Road. Free. Toilets available.',tip:'Do the waterfall side trail — there are great swimming holes to cool off in after the climb.',desc:'Stair-heavy summit climb from Karamatura Valley. Views over Manukau Harbour and central Auckland from the top. Waterfall side trail with swimming holes is a must-do detour.',lat:-36.9994,lon:174.5558,warning:true},
-  {id:'omanawanui',name:'Omanawanui Track',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'challenging',duration:'2–3 hrs',distance:'5.8 km',elevation:'499 m',tags:['coastal','views','bush'],zone:'waitakere',parking:'Eastern car park off Huia Road near Whatipu. Free — arrive early on weekends.',tip:'Walking poles highly recommended. Carry plenty of water. Push past the first peak — the second has the best views.',desc:'Your current benchmark. Over 2,400 stairs with panoramic views over Manukau Harbour, Whatipū Beach and the dramatic Waitākere coastline. Part of the Hillary Trail. Never disappoints.',lat:-37.0258,lon:174.5364,warning:true},
-  {id:'mahurangi_cudlip',name:'Cudlip Point, Mahurangi',area:'Mahurangi',drive:'~45 min',driveMin:45,difficulty:'challenging',duration:'1.5–2 hrs',distance:'3 km',elevation:'164 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Ngarewa Drive near Sullivans Bay Campground, Otarawao Bay. Free.',tip:'Compact but punchy climb. Views from the top take in Mahurangi Harbour, Kawau Island and the outer gulf.',desc:'Short but steep loop through bush and farm paddocks to a hilltop with outstanding coastal views. Compact, satisfying and rarely crowded. Mahurangi Harbour below is beautiful.',lat:-36.5233,lon:174.7167},
-  {id:'tawharanui',name:'Tāwharanui North + South Coast Loop',area:'Tāwharanui',drive:'~55 min',driveMin:55,difficulty:'moderate',duration:'2.5–3 hrs',distance:'8.7 km',elevation:'337 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Anchor Bay car park, 498 Takatu Road. Free. Clean boots at the biosecurity station on entry.',tip:'A wildlife sanctuary — you may spot kiwi at dusk. Bring a windbreaker, the peninsula can be very gusty.',desc:'Beautiful coastal loop through white-sand beaches, rugged clifftops and native bush. Outstanding birdlife. Views to Kawau Island and Great Barrier on clear days. A real gem.',lat:-36.3747,lon:174.8253},
-  {id:'rangitoto',name:'Rangitoto Summit Track',area:'Hauraki Gulf (ferry)',drive:'Ferry from Britomart',driveMin:60,difficulty:'moderate',duration:'2 hrs return',distance:'7 km',elevation:'260 m',tags:['views','bush'],zone:'auckland',parking:'No car needed — ferry from Britomart (Downtown Auckland). Check Fullers360 for timetables and book ahead.',tip:'Book the ferry in advance on weekends. The summit gets busy midday — aim for the first morning ferry.',desc:"Ferry to Auckland's iconic volcanic island. Steady climb through ancient lava fields and pōhutukawa forest to a 360° summit view of the Hauraki Gulf and city skyline. Unique landscape.",lat:-36.7871,lon:175.0297},
-  {id:'cossey_massey',name:'Cossey–Massey Loop',area:'Hunua Ranges',drive:'~55 min',driveMin:55,difficulty:'challenging',duration:'3 hrs',distance:'8.3 km',elevation:'500 m',tags:['bush','views'],zone:'hunua',parking:'Hunua Falls car park, Hunua Road. Free. Toilets and picnic area nearby.',tip:'Combine with a visit to Hunua Falls — worth the short detour to the waterfall and iconic photo frame.',desc:'One of the best bush hikes in Auckland. Loop through dense native forest with rocky outcrops, steep sections and sweeping views over the Hunua Ranges and Hauraki Gulf. Proper adventure.',lat:-37.1033,lon:175.1083,warning:true},
-  {id:'wairoa_loop',name:'Wairoa Suspension Bridge Loop',area:'Hunua Ranges',drive:'~55 min',driveMin:55,difficulty:'moderate',duration:'2.5–3 hrs',distance:'8 km',elevation:'350 m',tags:['bush','views'],zone:'hunua',parking:'Wairoa Dam car park, Hunua Gorge Road. Free.',tip:'Walk anti-clockwise for the best trail markers. The suspension bridge is a highlight — great river gorge views.',desc:'Forest escape through native bush with a stunning suspension bridge crossing and valley views over the Wairoa Reservoir. Varied terrain with flat sections, stair climbs and lookouts.',lat:-37.0817,lon:175.0917,warning:true},
+// North Shore (nearest to Browns Bay)
+{id:'longbay_okura',name:'Long Bay – Okura Walkway',area:'North Shore',drive:'~15 min',driveMin:15,difficulty:'moderate',duration:'2–3 hrs',distance:'7.5 km',elevation:'200 m',tags:['coastal','views','bush'],zone:'auckland',parking:'Long Bay Regional Park car park, Beach Road. Large free car park with toilets.',tip:"Walk north through Long Bay then continue to Okura. Return the same way or catch an Uber back. At low tide you can walk along the beach.",desc:'Beautiful clifftop walk linking Long Bay Regional Park to the Okura Estuary through native bush and coastal paddocks. Multiple beach access points along the way.',lat:-36.6849,lon:174.7493},
+{id:'longbay_coastal',name:'Long Bay Coastal Walk',area:'North Shore',drive:'~15 min',driveMin:15,difficulty:'moderate',duration:'1.5–2 hrs',distance:'6 km',elevation:'120 m',tags:['coastal','views'],zone:'auckland',parking:'Long Bay Regional Park car park, Beach Road. Large free car park.',tip:'Good rainy-day option when west coast tracks are muddy. Return via the beach at low tide.',desc:'Classic North Shore coastal walk from Long Bay along clifftops with great sea views. Multiple beach access points. An easy drive from Browns Bay.',lat:-36.6849,lon:174.7493},
+{id:'okura_dacre',name:'Okura Bush – Dacre Cottage',area:'North Shore',drive:'~20 min',driveMin:20,difficulty:'moderate',duration:'1.5 hrs',distance:'4 km',elevation:'150 m',tags:['coastal','bush'],zone:'auckland',parking:'End of Haigh Access Road, Redvale. Small car park.',tip:'Best at low tide — you can cross the stream at the cottage and explore the coastline. Historic settler cottage is worth the visit.',desc:'Short bush walk down through native forest and gum trees to the historic Dacre Cottage on a quiet tidal bay. Recent storms have caused some erosion, but the track is passable.',lat:-36.6581,lon:174.7278},
+{id:'takapuna_milford',name:'Takapuna–Milford Coastal Walk',area:'North Shore',drive:'~20 min',driveMin:20,difficulty:'moderate',duration:'1.5–2 hrs',distance:'5.5 km',elevation:'60 m',tags:['coastal','views'],zone:'auckland',parking:'Takapuna Beach Reserve, The Strand. Free weekends.',tip:"Check the tide — parts become impassable at high tide. Lots of cafés at each end for a post-walk coffee.",desc:'Scenic rocky coastal walk along the North Shore with stunning sea-level views to Rangitoto and the Hauraki Gulf. Popular on Sunday mornings. Can be combined with breakfast at Milford.',lat:-36.7829,lon:174.7770},
+// Whangaparaoa / Hibiscus Coast
+{id:'shakespear',name:'Shakespear Regional Park Loop',area:'Whangaparaoa',drive:'~30 min',driveMin:30,difficulty:'moderate',duration:'1.5–2.5 hrs',distance:'7 km',elevation:'200 m',tags:['coastal','views','bush'],zone:'auckland',parking:'Main car park at 1501 Whangaparaoa Rd. Free.',tip:'Arrive early on weekends. Take the Lookout Track loop for the best 360° views of the Gulf.',desc:'Forested peninsula walk with ocean views on multiple sides. Traces the park perimeter through native bush, open headlands and beaches. A local favourite.',lat:-36.6067,lon:174.8246},
+{id:'wenderholm',name:'Wenderholm Perimeter Track',area:'Wenderholm',drive:'~35 min',driveMin:35,difficulty:'moderate',duration:'1.5 hrs',distance:'4.6 km',elevation:'150 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Wenderholm Regional Park car park, 37 Schischka Road. Free.',tip:'Pass historic Couldrey House early. The steep Maungatauhoro summit section rewards with sweeping coastal views.',desc:'Loop around a sacred Māori headland beside the Pūhoi River. Mix of boardwalk, bush track and open ridge with views over the harbour and gulf.',lat:-36.5321,lon:174.7115},
+{id:'wenderholm_couldrey',name:'Wenderholm – Couldrey House Loop',area:'Wenderholm',drive:'~35 min',driveMin:35,difficulty:'moderate',duration:'1 hr',distance:'3 km',elevation:'80 m',tags:['coastal','bush'],zone:'tawharanui',parking:'Wenderholm Regional Park car park, 37 Schischka Road.',tip:'Couldrey House is open 1–4pm daily. $5 entry for the tour — beautifully preserved 1800s home.',desc:'Shorter loop taking in Couldrey House and the lookout. Good option when you want a shorter outing or to combine with a picnic at the beach.',lat:-36.5334,lon:174.7112},
+// Mahurangi
+{id:'mahurangi_cudlip',name:'Cudlip Point, Mahurangi',area:'Mahurangi',drive:'~45 min',driveMin:45,difficulty:'challenging',duration:'1.5–2 hrs',distance:'3 km',elevation:'164 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Sullivans Bay, 192 Ngarewa Drive. Free.',tip:'Compact but punchy climb. Views from the top take in Mahurangi Harbour, Kawau Island and the outer gulf.',desc:'Short but steep loop through bush and farm paddocks to a hilltop with outstanding coastal views. Rarely crowded.',lat:-36.5088,lon:174.7216},
+{id:'mahurangi_sullivans',name:'Sullivans Bay Loop',area:'Mahurangi',drive:'~45 min',driveMin:45,difficulty:'moderate',duration:'1–1.5 hrs',distance:'4 km',elevation:'120 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Sullivans Bay Campground car park. Free day use.',tip:'Great combination with a swim at Sullivans Bay. Watch for friendly ducks and sheep along the way.',desc:'Easy-to-moderate coastal loop through farmland, bush and a beautiful sheltered bay. Often spot ducklings and sheep. Family-friendly option.',lat:-36.5088,lon:174.7216},
+{id:'scandrett',name:'Scandrett Regional Park Loop',area:'Mahurangi East',drive:'~55 min',driveMin:55,difficulty:'moderate',duration:'1.5–2 hrs',distance:'5 km',elevation:'180 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Scandrett Regional Park, 114 Scandrett Road. Free.',tip:'Less busy than nearby parks. Historic orchard and homestead near the car park.',desc:'Quieter peninsula loop through pohutukawa-lined clifftops and native bush. Great views of Kawau Island and the outer gulf.',lat:-36.4441,lon:174.7686},
+// Tāwharanui
+{id:'tawharanui',name:'Tāwharanui North + South Coast Loop',area:'Tāwharanui',drive:'~55 min',driveMin:55,difficulty:'moderate',duration:'2.5–3 hrs',distance:'8.7 km',elevation:'337 m',tags:['coastal','views','bush'],zone:'tawharanui',parking:'Anchor Bay car park, 1181 Takatu Road. Free. Clean boots at the biosecurity station.',tip:'Wildlife sanctuary — you may spot kiwi at dusk. Bring a windbreaker, peninsula can be gusty.',desc:'Beautiful coastal loop through white-sand beaches, rugged clifftops and native bush. Outstanding birdlife. Views to Kawau Island on clear days.',lat:-36.3715,lon:174.8298},
+{id:'tawharanui_ecology',name:'Tāwharanui Ecology Trail',area:'Tāwharanui',drive:'~55 min',driveMin:55,difficulty:'moderate',duration:'1.5 hrs',distance:'4 km',elevation:'150 m',tags:['bush','coastal'],zone:'tawharanui',parking:'Anchor Bay car park, 1181 Takatu Road. Free.',tip:"A good intro to Tāwharanui — shorter but still shows off the sanctuary's best features. Listen for tūī and saddleback.",desc:'Shorter loop showcasing the wildlife sanctuary and regenerating native bush. Great for seeing birds and understanding how the pest-fenced park works.',lat:-36.3715,lon:174.8298},
+// Waitākere Ranges
+{id:'tehenga',name:'Te Henga Walkway',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'moderate',duration:'2–3 hrs',distance:'6 km',elevation:'280 m',tags:['coastal','views','bush'],zone:'waitakere',parking:'Constable Road, Te Henga (Bethells Beach area). Small free car park.',tip:'Check closures before going — some sections affected by 2023 storm slips. Start from Constable Road for the currently open section.',desc:'Part of the Hillary Trail. Rugged coastal and bush scenery with views stretching north to Muriwai and south to Bethells. Wild and quieter than Piha-area tracks.',lat:-36.8695,lon:174.4355,warning:true},
+{id:'mercer',name:'Mercer Bay Loop',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'moderate',duration:'50–80 min',distance:'2.7 km',elevation:'176 m',tags:['coastal','views'],zone:'waitakere',parking:'Log Race Road, Piha. Can fill by 9am on sunny weekends — go early.',tip:"Auckland's highest-rated trail (AllTrails 4.9 stars). Can be combined with Comans Track for a longer outing.",desc:'Dramatic clifftop loop above Piha with sweeping Tasman Sea views. Short and spectacular. Perfect when you want epic scenery without the full commitment.',lat:-36.9697,lon:174.4683,warning:true},
+{id:'comans',name:'Comans Track + Mercer Bay',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'moderate',duration:'2–2.5 hrs',distance:'7.2 km',elevation:'300 m',tags:['bush','coastal','views'],zone:'waitakere',parking:'Log Race Road or Karekare car park. Both free.',tip:'The most popular trail combination in the Waitākere Ranges. Native bush section is beautiful and well-maintained.',desc:'Extended loop combining dense native bush with the Mercer Bay clifftop. Gets the best of both worlds — forest immersion and coastal drama.',lat:-36.9697,lon:174.4683,warning:true},
+{id:'lionrock',name:'Lion Rock, Piha',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'challenging',duration:'30–45 min',distance:'1.2 km',elevation:'165 m',tags:['coastal','views'],zone:'waitakere',parking:'Piha Beach car park. Very busy on weekends — arrive before 9am.',tip:'Best paired with another Piha walk. Short and sharp. Slippery when wet.',desc:"Auckland's most iconic rock. Short steep volcanic climb above Piha Beach with 360° coastal views from the summit.",lat:-36.9567,lon:174.4664,warning:true},
+{id:'kitekite',name:'Kitekite Falls Track',area:'Waitākere Ranges',drive:'~45 min',driveMin:45,difficulty:'moderate',duration:'1.5 hrs',distance:'3 km',elevation:'200 m',tags:['bush','waterfall'],zone:'waitakere',parking:'Glenesk Road, Piha. Plenty of parking, public toilets.',tip:'Beautiful three-tier waterfall with swimming pools. Climb the stairs to the top pool for a quieter swim.',desc:'Popular bush walk through native forest to a stunning three-tier waterfall with swimming pools. Well-maintained boardwalk and stairs. Kid-friendly.',lat:-36.9523,lon:174.4833,warning:true},
+{id:'anawhata',name:'Anawhata Beach Track',area:'Waitākere Ranges',drive:'~50 min',driveMin:50,difficulty:'challenging',duration:'1–1.5 hrs',distance:'3 km',elevation:'180 m',tags:['coastal','bush'],zone:'waitakere',parking:'243 Anawhata Road. Small gravel car park. Remote — no facilities.',tip:'The climb back up is the real workout. Bring extra water. One of the quietest beaches on the west coast.',desc:'Steep descent through native bush to a secluded rugged black-sand beach. Virtually no crowds. The climb back makes this deceptively tough.',lat:-36.9243,lon:174.4584,warning:true},
+{id:'donald',name:'Mt Donald McLean',area:'Waitākere Ranges',drive:'~50 min',driveMin:50,difficulty:'challenging',duration:'2–3 hrs',distance:'6 km',elevation:'400 m',tags:['bush','views','waterfall'],zone:'waitakere',parking:'Karamatura car park off Huia Road. Free. Toilets available.',tip:'Do the waterfall side trail — great swimming holes to cool off in after the climb.',desc:'Stair-heavy summit climb from Karamatura Valley. Views over Manukau Harbour and central Auckland. Waterfall side trail with swimming holes is a must-do detour.',lat:-37.0042,lon:174.5604,warning:true},
+{id:'omanawanui',name:'Omanawanui Track',area:'Waitākere Ranges',drive:'~50 min',driveMin:50,difficulty:'challenging',duration:'2–3 hrs',distance:'5.8 km',elevation:'499 m',tags:['coastal','views','bush'],zone:'waitakere',parking:'Omanawanui car park, Whatipu Road. Free — arrive early on weekends.',tip:'Walking poles highly recommended. Carry plenty of water. There is a short chain-assisted rocky section. Push past the first peak — the second has the best views.',desc:'Your benchmark. Over 2,400 stairs with panoramic views over Manukau Harbour, Whatipū Beach and the dramatic Waitākere coastline. Part of the Hillary Trail.',lat:-37.0395,lon:174.5073,warning:true},
+{id:'arataki',name:'Arataki Nature Trail',area:'Waitākere Ranges',drive:'~40 min',driveMin:40,difficulty:'moderate',duration:'1–1.5 hrs',distance:'2 km',elevation:'80 m',tags:['bush'],zone:'waitakere',parking:'Arataki Visitor Centre, 300 Scenic Drive. Free parking, café and information centre.',tip:'Great intro to Waitākere. Centre has a good café and viewing platforms. See the massive Kauri Cathedral on the walk.',desc:'Gentle bush loop through the Waitākere Ranges with interpretation signs and a famous kauri grove. Good introduction to the area.',lat:-36.9469,lon:174.6066,warning:true},
+{id:'fairy_falls',name:'Fairy Falls Track',area:'Waitākere Ranges',drive:'~40 min',driveMin:40,difficulty:'moderate',duration:'1.5–2 hrs',distance:'3.5 km',elevation:'250 m',tags:['bush','waterfall'],zone:'waitakere',parking:'Scenic Drive car park, Waiatarua. Free.',tip:'Steep stairs down — remember you have to climb back up! Multiple falls along the way, so take your time.',desc:'Stair-heavy descent through native bush to a beautiful series of cascading falls. The return climb builds fitness fast. A Waitākere classic.',lat:-36.9352,lon:174.5819,warning:true},
+{id:'goldie_bush',name:'Goldie Bush – Mokoroa Falls',area:'Waitākere Ranges',drive:'~50 min',driveMin:50,difficulty:'challenging',duration:'3 hrs',distance:'7 km',elevation:'350 m',tags:['bush','waterfall'],zone:'waitakere',parking:'Constable Road, Bethells. Small free car park.',tip:'One of the best bush hikes in the Waitākeres. Can be muddy after rain — wear proper boots.',desc:'Deep bush loop through regenerating native forest to the beautiful Mokoroa Falls. Remote-feeling hike that really makes you appreciate the Waitākere wilderness.',lat:-36.8700,lon:174.4361,warning:true},
+// Hauraki Gulf
+{id:'rangitoto',name:'Rangitoto Summit Track',area:'Hauraki Gulf (ferry)',drive:'Ferry from Britomart',driveMin:60,difficulty:'moderate',duration:'2 hrs return',distance:'7 km',elevation:'260 m',tags:['views','bush'],zone:'auckland',parking:'No car needed — ferry from Britomart. Check Fullers360 for timetables and book ahead.',tip:'Book the ferry in advance on weekends. Aim for the first morning ferry — summit gets busy midday.',desc:"Ferry to Auckland's iconic volcanic island. Climb through ancient lava fields and pōhutukawa forest to a 360° summit view of the Hauraki Gulf and city skyline.",lat:-36.8072,lon:174.8621},
+{id:'motutapu',name:'Motutapu Island Walk',area:'Hauraki Gulf (ferry)',drive:'Ferry to Rangitoto',driveMin:60,difficulty:'challenging',duration:'3–4 hrs',distance:'10 km',elevation:'250 m',tags:['coastal','views'],zone:'auckland',parking:'No car — ferry to Rangitoto then walk the causeway to Motutapu.',tip:'Full day outing. Farmland and beaches, very different feel to Rangitoto. Check ferry return times carefully.',desc:"Cross from Rangitoto via the causeway to Motutapu's open pastures and quiet beaches. A proper day adventure. Far less crowded than Rangitoto.",lat:-36.8254,lon:174.8493},
+// Hunua
+{id:'hunua_falls',name:'Hunua Falls Loop',area:'Hunua Ranges',drive:'~55 min',driveMin:55,difficulty:'moderate',duration:'1–1.5 hrs',distance:'3 km',elevation:'150 m',tags:['bush','waterfall'],zone:'hunua',parking:'Hunua Falls car park. Free with toilets. Electric gate closes at 9pm.',tip:'Short but rewarding. The waterfall itself is a gem. Great starter for the Hunua Ranges.',desc:'Short bush walk around the iconic Hunua Falls. Good introduction to the Hunua Ranges before tackling the longer tracks. Kid-friendly.',lat:-37.0665,lon:175.0894,warning:true},
+{id:'cossey_massey',name:'Cossey–Massey Loop',area:'Hunua Ranges',drive:'~55 min',driveMin:55,difficulty:'challenging',duration:'3 hrs',distance:'8.3 km',elevation:'500 m',tags:['bush','views'],zone:'hunua',parking:'Hunua Falls car park. Free. Toilets and picnic area nearby.',tip:'Combine with a visit to Hunua Falls. Proper bush adventure — one of the best in Auckland.',desc:'One of the best bush hikes in Auckland. Loop through dense native forest with rocky outcrops, steep sections and sweeping views over the Hunua Ranges and Gulf.',lat:-37.0665,lon:175.0894,warning:true},
+{id:'wairoa_loop',name:'Wairoa Suspension Bridge Loop',area:'Hunua Ranges',drive:'~60 min',driveMin:60,difficulty:'moderate',duration:'2.5–3 hrs',distance:'6.5 km',elevation:'350 m',tags:['bush','views'],zone:'hunua',parking:'Wairoa Loop car park, 164A Moumoukai Road. Free.',tip:'Walk anti-clockwise for the best trail markers. The suspension bridge is the highlight.',desc:'Forest escape through native bush with a stunning suspension bridge and valley views over the Wairoa Reservoir. Varied terrain with lookouts.',lat:-37.1120,lon:175.1236,warning:true},
+// East Auckland
+{id:'duder',name:'Duder Regional Park Loop',area:'East Auckland',drive:'~60 min',driveMin:60,difficulty:'moderate',duration:'1.5–2 hrs',distance:'4.5 km',elevation:'180 m',tags:['coastal','views'],zone:'hunua',parking:'Duder Regional Park, 933R North Road, Clevedon. Free.',tip:'Proper coastal farm walk with sheep and cows. 270° ocean views from the trig point.',desc:'Peninsula farm loop with stunning panoramic views over the Hauraki Gulf. Very Kiwi — sheep grazing, trig point, sea views. Often quiet.',lat:-36.9052,lon:175.0707},
+{id:'pohutukawa_coast',name:'Pohutukawa Coast Walk',area:'East Auckland',drive:'~50 min',driveMin:50,difficulty:'moderate',duration:'2 hrs',distance:'5 km',elevation:'100 m',tags:['coastal','views'],zone:'hunua',parking:'Shelly Bay Reserve, Beachlands. Free.',tip:'Quieter alternative to the west coast. Pohutukawa trees in December are stunning.',desc:'Coastal walk along a less-known stretch of Auckland coastline. Native pohutukawa, sandy coves and clear gulf views.',lat:-36.8791,lon:175.0056},
+// Volcanic cones (short but scenic)
+{id:'mt_eden',name:'Mt Eden (Maungawhau) Summit',area:'Central Auckland',drive:'~30 min',driveMin:30,difficulty:'moderate',duration:'45 min',distance:'2 km',elevation:'196 m',tags:['views'],zone:'auckland',parking:'250 Mount Eden Road. Limited parking — no vehicles to summit anymore.',tip:"Auckland's highest natural point. Great sunrise or sunset option. Boardwalk around the crater rim.",desc:'Short steep climb to a volcanic crater with the best 360° views of Auckland. Quick reliable option when longer hikes aren\'t possible.',lat:-36.8774,lon:174.7643},
+{id:'one_tree_hill',name:'One Tree Hill (Maungakiekie)',area:'Central Auckland',drive:'~35 min',driveMin:35,difficulty:'moderate',duration:'1–1.5 hrs',distance:'4 km',elevation:'183 m',tags:['views'],zone:'auckland',parking:'Cornwall Park, Green Lane West entrance. Free, plentiful.',tip:'Combine with a coffee at the Cornwall Park Café afterwards. Sheep and cows graze in the park.',desc:'Walk through Cornwall Park farmland to the historic obelisk at the summit. Stunning city panorama. Multiple entry points — pick your favourite.',lat:-36.9019,lon:174.7814},
+{id:'north_head',name:'North Head (Maungauika)',area:'Devonport',drive:'~35 min',driveMin:35,difficulty:'moderate',duration:'1.5–2 hrs',distance:'3.5 km',elevation:'150 m',tags:['coastal','views'],zone:'auckland',parking:'18 Takarunga Road, Devonport. Free parking inside the reserve.',tip:'Bring a torch to explore the WWII tunnels. Combine with a ferry to Devonport for a fun family day.',desc:'Historic headland with WWII fortifications, tunnels, and panoramic views of the city, harbour and Hauraki Gulf. Kid-friendly with a sense of adventure.',lat:-36.8272,lon:174.8104},
 ];
 
 let activeFilter='all',hikeLog=JSON.parse(localStorage.getItem('trailfit-log')||'[]'),activeTrail=null,weatherData={},suggestionTrail=null;
+let map=null,userMarker=null,routeLine=null;
+let tracking={active:false,watchId:null,points:[],startTime:null,trailId:null,distance:0,timer:null};
 
 function getFitnessLevel(){
   const total=hikeLog.length;
@@ -256,14 +345,9 @@ function getFitnessLevel(){
   if(total<8||chal<2)return{level:'Trekker',next:'Summit Seeker',progress:Math.round((Math.min(total,8)/8)*100),desc:'Good base — try more challenging trails.',nextAt:8};
   return{level:'Summit Seeker',next:null,progress:100,desc:'Strong fitness — the full range is yours.'};
 }
-
-function isReadyForTrail(t){
-  if(t.difficulty==='moderate')return true;
-  return getFitnessLevel().level!=='Explorer';
-}
+function isReadyForTrail(t){if(t.difficulty==='moderate')return true;return getFitnessLevel().level!=='Explorer'}
 
 const zones={waitakere:{name:'Waitākere',lat:-36.92,lon:174.53},tawharanui:{name:'Tāwharanui/North',lat:-36.38,lon:174.83},auckland:{name:'North Shore',lat:-36.69,lon:174.76},hunua:{name:'Hunua',lat:-37.10,lon:175.09}};
-
 function getNextSunday(){const d=new Date();const diff=(7-d.getDay())%7||7;d.setDate(d.getDate()+diff);return d.toISOString().split('T')[0]}
 function getSundayLabel(){const d=new Date();const diff=(7-d.getDay())%7||7;d.setDate(d.getDate()+diff);return d.toLocaleDateString('en-NZ',{weekday:'long',day:'numeric',month:'short'})}
 const wmoDesc=c=>c===0?'Clear':c<=3?'Cloudy':c<=48?'Fog':c<=67?'Rain':c<=82?'Showers':'Storms';
@@ -309,7 +393,6 @@ function computeSuggestion(){
     document.getElementById('suggest-reason').textContent=reason;
   }
 }
-
 function openSuggestion(){if(suggestionTrail)openTrail(suggestionTrail.id)}
 
 function renderTrails(){
@@ -364,9 +447,10 @@ function openTrail(id){
       <span class="diff-badge ${t.difficulty}" style="font-size:11px">${t.difficulty}</span>
       ${t.tags.map(tag=>`<span class="trail-tag ${tag}">${tag}</span>`).join('')}
     </div>
-    ${doneEntries.length>0?`<div class="modal-done-history"><div class="modal-done-title">Your history (${doneEntries.length} time${doneEntries.length>1?'s':''})</div>${doneEntries.slice(0,3).map(e=>`<div style="font-size:11px;color:var(--cliff);padding:2px 0">${formatDate(e.date)}${e.notes?` — ${e.notes}`:''}</div>`).join('')}</div>`:''}
+    ${doneEntries.length>0?`<div class="modal-done-history"><div class="modal-done-title">Your history (${doneEntries.length} time${doneEntries.length>1?'s':''})</div>${doneEntries.slice(0,3).map(e=>`<div style="font-size:11px;color:var(--cliff);padding:2px 0">${formatDate(e.date)}${e.gpsDistance?` · ${e.gpsDistance}km`:''}${e.notes?` — ${e.notes}`:''}</div>`).join('')}</div>`:''}
     <div class="modal-actions">
-      <a class="btn-map" href="${mapsUrl}" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>Open trailhead in Maps</a>
+      <a class="btn-map" href="${mapsUrl}" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>Driving directions</a>
+      <button class="btn-gps" onclick="startTracking('${t.id}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg>Start GPS tracking</button>
       <button class="btn-primary" onclick="logFromModal()">Log this hike</button>
       <button class="btn-secondary" onclick="closeModal()">Close</button>
     </div>`;
@@ -374,13 +458,108 @@ function openTrail(id){
 }
 
 function closeModal(e){if(!e||e.target===document.getElementById('trail-modal'))document.getElementById('trail-modal').classList.remove('open')}
-
 function logFromModal(){
   document.getElementById('trail-modal').classList.remove('open');
   showPage('log');
   setTimeout(()=>{if(activeTrail)document.getElementById('log-trail-select').value=activeTrail.id;document.getElementById('log-date').valueAsDate=new Date()},100);
 }
 
+// ── MAP ──
+function initMap(){
+  if(map)return;
+  map=L.map('trails-map').setView([-36.75,174.7],10);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:18,
+    attribution:'© OpenStreetMap contributors'
+  }).addTo(map);
+  trails.forEach(t=>{
+    const icon=L.divIcon({
+      className:'',
+      html:`<div class="custom-marker marker-${t.difficulty}">${t.difficulty==='moderate'?'M':'C'}</div>`,
+      iconSize:[28,28],
+      iconAnchor:[14,14]
+    });
+    const m=L.marker([t.lat,t.lon],{icon}).addTo(map);
+    const done=hikeLog.filter(e=>e.trailId===t.id).length;
+    m.bindPopup(`
+      <div class="popup-title">${t.name}</div>
+      <div class="popup-area">${t.area} · ${t.drive}</div>
+      <div class="popup-meta">${t.duration} · ${t.distance} · ${t.elevation}${done>0?` · ${done}× done`:''}</div>
+      <button class="popup-btn" onclick="openTrail('${t.id}')">Details</button>
+    `);
+  });
+}
+
+function locateMe(){
+  if(!navigator.geolocation){alert('Location not supported on this device.');return}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude,longitude}=pos.coords;
+    if(userMarker)map.removeLayer(userMarker);
+    userMarker=L.circleMarker([latitude,longitude],{radius:8,color:'#fff',weight:2,fillColor:'#2a7a9a',fillOpacity:1}).addTo(map);
+    userMarker.bindPopup('You are here').openPopup();
+    map.setView([latitude,longitude],13);
+  },err=>{alert('Could not get your location: '+err.message)});
+}
+
+// ── GPS TRACKING ──
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function startTracking(trailId){
+  if(!navigator.geolocation){alert('GPS not supported on this device.');return}
+  if(tracking.active){alert('Already tracking a hike. Stop the current one first.');return}
+  const trail=trails.find(t=>t.id===trailId);
+  if(!confirm(`Start GPS tracking for ${trail.name}?\n\nYour phone will use GPS while tracking. Keep the app open for best results.`))return;
+  document.getElementById('trail-modal').classList.remove('open');
+  tracking={active:true,points:[],startTime:Date.now(),trailId,distance:0,watchId:null,timer:null};
+  document.getElementById('gps-trail-name').textContent=trail.name;
+  document.getElementById('gps-overlay').classList.add('active');
+  tracking.watchId=navigator.geolocation.watchPosition(pos=>{
+    const{latitude,longitude}=pos.coords;
+    const last=tracking.points[tracking.points.length-1];
+    if(last){
+      const d=haversine(last[0],last[1],latitude,longitude);
+      if(d<0.5)tracking.distance+=d;
+    }
+    tracking.points.push([latitude,longitude]);
+    updateGpsDisplay();
+  },err=>{console.error('GPS error',err)},{enableHighAccuracy:true,maximumAge:5000,timeout:10000});
+  tracking.timer=setInterval(updateGpsDisplay,1000);
+}
+
+function updateGpsDisplay(){
+  const elapsed=(Date.now()-tracking.startTime)/1000;
+  const mins=Math.floor(elapsed/60);
+  const secs=Math.floor(elapsed%60);
+  document.getElementById('gps-distance').textContent=tracking.distance.toFixed(2);
+  document.getElementById('gps-time').textContent=`${mins}:${secs.toString().padStart(2,'0')}`;
+  const pace=tracking.distance>0.1?(elapsed/60/tracking.distance).toFixed(1):'—';
+  document.getElementById('gps-pace').textContent=pace;
+}
+
+function stopTracking(){
+  if(!tracking.active)return;
+  if(tracking.watchId)navigator.geolocation.clearWatch(tracking.watchId);
+  if(tracking.timer)clearInterval(tracking.timer);
+  const elapsed=(Date.now()-tracking.startTime)/1000;
+  const mins=Math.round(elapsed/60);
+  const dist=tracking.distance.toFixed(2);
+  const trail=trails.find(t=>t.id===tracking.trailId);
+  if(confirm(`Tracking stopped.\n\n${trail.name}\nDistance: ${dist} km\nTime: ${mins} min\n\nSave to hike log?`)){
+    hikeLog.push({trailId:tracking.trailId,date:new Date().toISOString().split('T')[0],notes:`GPS tracked`,gpsDistance:dist,gpsMinutes:mins,id:Date.now()});
+    localStorage.setItem('trailfit-log',JSON.stringify(hikeLog));
+    renderLog();renderTrails();computeSuggestion();
+  }
+  tracking={active:false,watchId:null,points:[],startTime:null,trailId:null,distance:0,timer:null};
+  document.getElementById('gps-overlay').classList.remove('active');
+}
+
+// ── LOG ──
 function renderLog(){
   const fitness=getFitnessLevel();
   document.getElementById('progress-section').innerHTML=`<div class="progress-section">
@@ -399,7 +578,7 @@ function renderLog(){
   el.innerHTML=sorted.map((e,i)=>{
     const t=trails.find(tr=>tr.id===e.trailId);
     return`<div class="log-entry"><div class="log-dot"><svg viewBox="0 0 24 24"><path d="M3 17l4-8 4 4 3-6 4 10"/></svg></div>
-    <div style="flex:1;min-width:0"><div class="log-entry-name">${t?t.name:e.trailId}</div><div class="log-entry-date">${formatDate(e.date)}</div>${e.notes?`<div class="log-entry-notes">"${e.notes}"</div>`:''}</div>
+    <div style="flex:1;min-width:0"><div class="log-entry-name">${t?t.name:e.trailId}</div><div class="log-entry-date">${formatDate(e.date)}</div>${e.gpsDistance?`<div class="log-entry-gps">📍 ${e.gpsDistance}km · ${e.gpsMinutes}min</div>`:''}${e.notes&&e.notes!=='GPS tracked'?`<div class="log-entry-notes">"${e.notes}"</div>`:''}</div>
     <button class="log-remove" onclick="removeLogEntry(${i})"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>`;
   }).join('');
 }
@@ -414,14 +593,12 @@ function addLogEntry(){
   document.getElementById('log-notes').value='';
   renderLog();renderTrails();computeSuggestion();
 }
-
 function removeLogEntry(idx){
   const sorted=[...hikeLog].sort((a,b)=>new Date(b.date)-new Date(a.date));
   hikeLog=hikeLog.filter(e=>e.id!==sorted[idx].id);
   localStorage.setItem('trailfit-log',JSON.stringify(hikeLog));
   renderLog();renderTrails();computeSuggestion();
 }
-
 function formatDate(s,short){const d=new Date(s+'T12:00:00');return short?d.toLocaleDateString('en-NZ',{day:'numeric',month:'short'}):d.toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'numeric'})}
 
 function showPage(name){
@@ -430,6 +607,7 @@ function showPage(name){
   document.getElementById('page-'+name).classList.add('active');
   document.querySelector(`.nav-tab[onclick="showPage('${name}')"]`).classList.add('active');
   if(name==='log')renderLog();
+  if(name==='map'){setTimeout(()=>{initMap();if(map)map.invalidateSize()},100)}
 }
 
 document.getElementById('filter-bar').addEventListener('click',e=>{
