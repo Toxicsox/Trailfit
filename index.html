@@ -443,11 +443,12 @@ async function fetchWeather(){
       weatherData[r.key]={max:Math.round(r.data.daily.temperature_2m_max[idx]),min:Math.round(r.data.daily.temperature_2m_min[idx]),code:r.data.daily.weathercode[idx],desc:wmoDesc(r.data.daily.weathercode[idx]),good:wmoGood(r.data.daily.weathercode[idx]),fullWeek:r.data.daily};
     });
 
-    // Sunday summary
-    document.getElementById('weather-zones').innerHTML=results.map(r=>{
-      const w=weatherData[r.key];
-      return`<div class="weather-zone"><span class="wz-name">${r.name}</span><span class="wz-temp">${w.min}–${w.max}°C</span><span class="wz-desc" style="${!w.good?'color:#f4b942':''}">${w.desc}</span></div>`;
-    }).join('');
+    // Sunday summary — show North Shore only (suggestion engine still uses all zones)
+    const northShore=results.find(r=>r.key==='auckland');
+    if(northShore){
+      const w=weatherData[northShore.key];
+      document.getElementById('weather-zones').innerHTML=`<div class="weather-zone"><span class="wz-name">${northShore.name}</span><span class="wz-temp">${w.min}–${w.max}°C</span><span class="wz-desc" style="${!w.good?'color:#f4b942':''}">${w.desc}</span></div>`;
+    }
 
     // 7-day forecast for the primary zone (average of zones for "best day")
     const dayScores=[];
