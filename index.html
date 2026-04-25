@@ -776,7 +776,7 @@ function showPage(name){
   document.getElementById('page-'+name).classList.add('active');
   document.querySelector(`.nav-tab[onclick="showPage('${name}')"]`).classList.add('active');
   if(name==='log')renderLog();
-  if(name==='map'){setTimeout(()=>{initMap();if(map)map.invalidateSize()},100)}
+  if(name==='map'){setTimeout(()=>{initMap();if(map){map.invalidateSize();map.setView([-36.75,174.7],10);}},300)}
 }
 
 document.getElementById('filter-bar').addEventListener('click',e=>{
