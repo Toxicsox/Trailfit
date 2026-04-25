@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5-2q8eAZxwiOvbl7q2lr0JBKAsozGs_c&libraries=places&loading=async"></script>
 <style>
 :root{--forest:#0f2535;--moss:#1b4d6b;--fern:#2a7a9a;--sage:#6aafc4;--mist:#b8d9e8;--cream:#f0f5f8;--sand:#daeaf2;--stone:#7a9aaa;--cliff:#2a4555;--ocean:#1a6585;--gold:#c8921e;--alert:#c04030}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -63,8 +64,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .area-name{font-family:'Fraunces',serif;font-size:13px;font-weight:500;color:var(--ocean);text-transform:uppercase;letter-spacing:.06em}
 .area-drive{font-size:11px;color:var(--stone)}
 .trail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:9px}
-.trail-card{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:.875rem;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.trail-card{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:0;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
 .trail-card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.trail-card-photo{width:100%;height:120px;background:linear-gradient(135deg,var(--mist),var(--sage));background-size:cover;background-position:center;position:relative}
+.trail-card-photo.placeholder::after{content:'🏞️';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;opacity:.3}
+.trail-card-content{padding:.875rem}
 .trail-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:5px}
 .trail-name{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--forest);line-height:1.3}
 .diff-badge{font-size:9px;font-weight:500;padding:2px 8px;border-radius:9px;white-space:nowrap;flex-shrink:0;letter-spacing:.04em;text-transform:uppercase}
@@ -89,10 +93,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 .modal{background:var(--cream);border-radius:20px 20px 0 0;padding:1.375rem 1.25rem;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;animation:slideUp .22s ease}
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-handle{width:34px;height:4px;background:var(--stone);border-radius:2px;margin:0 auto 1.125rem;opacity:.35}
-.modal-close{position:absolute;top:14px;right:14px;width:32px;height:32px;background:var(--sand);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;padding:0}
-.modal-close:hover{background:var(--mist)}
-.modal-close svg{width:16px;height:16px;stroke:var(--cliff);fill:none;stroke-width:2.2}
-.modal{position:relative}
+.modal-photo{width:calc(100% + 2.5rem);height:180px;margin:-1.375rem -1.25rem 1rem;background:linear-gradient(135deg,var(--mist),var(--sage));background-size:cover;background-position:center;position:relative}
+.modal-photo.placeholder::after{content:'🏞️';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;opacity:.3}
+.modal-photo-attrib{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,.5);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px}
 .modal-title{font-family:'Fraunces',serif;font-size:21px;font-weight:500;color:var(--forest);margin-bottom:.25rem}
 .modal-area{font-size:11px;color:var(--stone);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.875rem}
 .modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:.875rem}
@@ -120,7 +123,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 /* Map page */
 #map-page{height:calc(100vh - 54px);display:none;flex-direction:column}
 #map-page.active{display:flex}
-#trails-map{flex:1;width:100%;min-height:500px;background:#aad3df}
+#trails-map{flex:1;width:100%}
 .map-controls{background:var(--forest);color:var(--mist);padding:.75rem 1.25rem;display:flex;gap:8px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.07)}
 .map-info{font-size:12px;color:var(--sage)}
 .map-my-location{background:var(--fern);color:#fff;border:none;border-radius:8px;padding:.4rem .8rem;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
@@ -294,7 +297,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--forest
 </div>
 
 <div class="modal-overlay" id="trail-modal" onclick="closeModal(event)">
- <div class="modal"><button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button><div class="modal-handle"></div><div id="modal-body"></div></div>
+  <div class="modal"><div class="modal-handle"></div><div id="modal-body"></div></div>
 </div>
 
 <div class="gps-overlay" id="gps-overlay">
@@ -342,7 +345,7 @@ const trails=[
 {id:'goldie_bush',name:'Goldie Bush – Mokoroa Falls',area:'Waitākere Ranges',drive:'~50 min',driveMin:50,difficulty:'challenging',duration:'3 hrs',distance:'7 km',elevation:'350 m',tags:['bush','waterfall'],zone:'waitakere',parking:'Constable Road, Bethells. Small free car park.',tip:'One of the best bush hikes in the Waitākeres. Can be muddy after rain — wear proper boots.',desc:'Deep bush loop through regenerating native forest to the beautiful Mokoroa Falls. Remote-feeling hike that really makes you appreciate the Waitākere wilderness.',lat:-36.8700,lon:174.4361,warning:true},
 // Hauraki Gulf
 {id:'rangitoto',name:'Rangitoto Summit Track',area:'Hauraki Gulf (ferry)',drive:'Ferry from Britomart',driveMin:60,difficulty:'moderate',duration:'2 hrs return',distance:'7 km',elevation:'260 m',tags:['views','bush'],zone:'auckland',parking:'No car needed — ferry from Britomart. Check Fullers360 for timetables and book ahead.',tip:'Book the ferry in advance on weekends. Aim for the first morning ferry — summit gets busy midday.',desc:"Ferry to Auckland's iconic volcanic island. Climb through ancient lava fields and pōhutukawa forest to a 360° summit view of the Hauraki Gulf and city skyline.",lat:-36.8072,lon:174.8621},
-{id:'motutapu',name:'Motutapu Island Walk',area:'Hauraki Gulf (ferry)',drive:'Ferry to Rangitoto',driveMin:60,difficulty:'challenging',duration:'3–4 hrs',distance:'10 km',elevation:'250 m',tags:['coastal','views'],zone:'auckland',parking:'No car — ferry to Rangitoto then walk the causeway to Motutapu.',tip:'Full day outing. Farmland and beaches, very different feel to Rangitoto. Check ferry return times carefully.',desc:"Cross from Rangitoto via the causeway to Motutapu's open pastures and quiet beaches. A proper day adventure. Far less crowded than Rangitoto.",lat:-36.7755,lon:174.8968},
+{id:'motutapu',name:'Motutapu Island Walk',area:'Hauraki Gulf (ferry)',drive:'Ferry to Rangitoto',driveMin:60,difficulty:'challenging',duration:'3–4 hrs',distance:'10 km',elevation:'250 m',tags:['coastal','views'],zone:'auckland',parking:'No car — ferry to Rangitoto then walk the causeway to Motutapu.',tip:'Full day outing. Farmland and beaches, very different feel to Rangitoto. Check ferry return times carefully.',desc:"Cross from Rangitoto via the causeway to Motutapu's open pastures and quiet beaches. A proper day adventure. Far less crowded than Rangitoto.",lat:-36.8254,lon:174.8493},
 // Hunua
 {id:'hunua_falls',name:'Hunua Falls Loop',area:'Hunua Ranges',drive:'~55 min',driveMin:55,difficulty:'moderate',duration:'1–1.5 hrs',distance:'3 km',elevation:'150 m',tags:['bush','waterfall'],zone:'hunua',parking:'Hunua Falls car park. Free with toilets. Electric gate closes at 9pm.',tip:'Short but rewarding. The waterfall itself is a gem. Great starter for the Hunua Ranges.',desc:'Short bush walk around the iconic Hunua Falls. Good introduction to the Hunua Ranges before tackling the longer tracks. Kid-friendly.',lat:-37.0665,lon:175.0894,warning:true},
 {id:'cossey_massey',name:'Cossey–Massey Loop',area:'Hunua Ranges',drive:'~55 min',driveMin:55,difficulty:'challenging',duration:'3 hrs',distance:'8.3 km',elevation:'500 m',tags:['bush','views'],zone:'hunua',parking:'Hunua Falls car park. Free. Toilets and picnic area nearby.',tip:'Combine with a visit to Hunua Falls. Proper bush adventure — one of the best in Auckland.',desc:'One of the best bush hikes in Auckland. Loop through dense native forest with rocky outcrops, steep sections and sweeping views over the Hunua Ranges and Gulf.',lat:-37.0665,lon:175.0894,warning:true},
@@ -440,12 +443,11 @@ async function fetchWeather(){
       weatherData[r.key]={max:Math.round(r.data.daily.temperature_2m_max[idx]),min:Math.round(r.data.daily.temperature_2m_min[idx]),code:r.data.daily.weathercode[idx],desc:wmoDesc(r.data.daily.weathercode[idx]),good:wmoGood(r.data.daily.weathercode[idx]),fullWeek:r.data.daily};
     });
 
-    // Sunday summary — show North Shore only (your local area) for compact mobile view
-    const northShore=results.find(r=>r.key==='auckland');
-    if(northShore){
-      const w=weatherData[northShore.key];
-      document.getElementById('weather-zones').innerHTML=`<div class="weather-zone"><span class="wz-name">North Shore</span><span class="wz-temp">${w.min}–${w.max}°C</span><span class="wz-desc" style="${!w.good?'color:#f4b942':''}">${w.desc}</span></div>`;
-    }
+    // Sunday summary
+    document.getElementById('weather-zones').innerHTML=results.map(r=>{
+      const w=weatherData[r.key];
+      return`<div class="weather-zone"><span class="wz-name">${r.name}</span><span class="wz-temp">${w.min}–${w.max}°C</span><span class="wz-desc" style="${!w.good?'color:#f4b942':''}">${w.desc}</span></div>`;
+    }).join('');
 
     // 7-day forecast for the primary zone (average of zones for "best day")
     const dayScores=[];
@@ -527,6 +529,58 @@ function computeSuggestion(){
 }
 function openSuggestion(){if(suggestionTrail)openTrail(suggestionTrail.id)}
 
+// ── PHOTOS (Google Places) ──
+const photoCache=JSON.parse(localStorage.getItem('trailfit-photos')||'{}');
+let placesService=null;
+
+function initPlaces(){
+  if(placesService)return placesService;
+  if(typeof google==='undefined'||!google.maps||!google.maps.places)return null;
+  // Hidden div needed for PlacesService
+  const div=document.createElement('div');
+  placesService=new google.maps.places.PlacesService(div);
+  return placesService;
+}
+
+async function fetchTrailPhoto(trail){
+  if(photoCache[trail.id])return photoCache[trail.id];
+  const svc=initPlaces();
+  if(!svc)return null;
+  return new Promise(resolve=>{
+    svc.findPlaceFromQuery({
+      query:trail.name+' Auckland',
+      fields:['place_id','photos','name']
+    },(results,status)=>{
+      if(status==='OK'&&results&&results[0]&&results[0].photos&&results[0].photos[0]){
+        const url=results[0].photos[0].getUrl({maxWidth:800,maxHeight:600});
+        const attrib=results[0].photos[0].html_attributions&&results[0].photos[0].html_attributions[0]?results[0].photos[0].html_attributions[0].replace(/<[^>]+>/g,''):'';
+        photoCache[trail.id]={url,attrib};
+        try{localStorage.setItem('trailfit-photos',JSON.stringify(photoCache))}catch(e){}
+        resolve(photoCache[trail.id]);
+      }else{
+        resolve(null);
+      }
+    });
+  });
+}
+
+async function loadAllPhotos(){
+  for(const trail of trails){
+    if(!photoCache[trail.id]){
+      await fetchTrailPhoto(trail);
+      // Update the card if it's currently visible
+      const cardPhoto=document.querySelector(`[data-trail-photo="${trail.id}"]`);
+      if(cardPhoto&&photoCache[trail.id]){
+        cardPhoto.style.backgroundImage=`url(${photoCache[trail.id].url})`;
+        cardPhoto.classList.remove('placeholder');
+      }
+      // Small delay to be nice to the API
+      await new Promise(r=>setTimeout(r,200));
+    }
+  }
+}
+
+
 function renderTrails(){
   const container=document.getElementById('trails-container');
   let filtered=activeFilter==='all'?[...trails]:activeFilter==='nearby'?[...trails].sort((a,b)=>a.driveMin-b.driveMin):trails.filter(t=>t.tags.includes(activeFilter)||t.difficulty===activeFilter);
@@ -538,15 +592,20 @@ function renderTrails(){
       <div class="trail-grid">${aTrails.map(t=>{
         const done=hikeLog.filter(e=>e.trailId===t.id).length;
         const ready=isReadyForTrail(t);
+        const photo=photoCache[t.id];
+        const photoStyle=photo?`style="background-image:url(${photo.url})"`:'';
         return`<div class="trail-card" onclick="openTrail('${t.id}')">
-          ${done>0?`<div class="done-badge"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>`:''}
-          <div class="trail-card-top"><div class="trail-name">${t.name}</div><span class="diff-badge ${t.difficulty}">${t.difficulty}</span></div>
-          <div class="trail-meta"><span>${t.duration}</span><span>${t.distance}</span><span>${t.elevation}</span></div>
-          <div class="trail-desc">${t.desc.substring(0,88)}…</div>
-          <div class="trail-tags">
-            ${t.tags.map(tag=>`<span class="trail-tag ${tag}">${tag}</span>`).join('')}
-            ${done>0?`<span class="trail-tag" style="background:#cce5f0;color:#0f3a50">${done}× done</span>`:''}
-            ${t.difficulty==='challenging'&&!ready?`<span class="trail-tag" style="background:#f0f0f0;color:#888">build fitness first</span>`:''}
+          <div class="trail-card-photo ${photo?'':'placeholder'}" data-trail-photo="${t.id}" ${photoStyle}></div>
+          <div class="trail-card-content">
+            ${done>0?`<div class="done-badge"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>`:''}
+            <div class="trail-card-top"><div class="trail-name">${t.name}</div><span class="diff-badge ${t.difficulty}">${t.difficulty}</span></div>
+            <div class="trail-meta"><span>${t.duration}</span><span>${t.distance}</span><span>${t.elevation}</span></div>
+            <div class="trail-desc">${t.desc.substring(0,88)}…</div>
+            <div class="trail-tags">
+              ${t.tags.map(tag=>`<span class="trail-tag ${tag}">${tag}</span>`).join('')}
+              ${done>0?`<span class="trail-tag" style="background:#cce5f0;color:#0f3a50">${done}× done</span>`:''}
+              ${t.difficulty==='challenging'&&!ready?`<span class="trail-tag" style="background:#f0f0f0;color:#888">build fitness first</span>`:''}
+            </div>
           </div>
         </div>`;
       }).join('')}</div>
@@ -560,7 +619,10 @@ function openTrail(id){
   const doneEntries=hikeLog.filter(e=>e.trailId===t.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const ready=isReadyForTrail(t);
   const mapsUrl=`https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lon}`;
+  const photo=photoCache[t.id];
+  const photoHtml=photo?`<div class="modal-photo" style="background-image:url(${photo.url})">${photo.attrib?`<div class="modal-photo-attrib">${photo.attrib}</div>`:''}</div>`:`<div class="modal-photo placeholder"></div>`;
   document.getElementById('modal-body').innerHTML=`
+    ${photoHtml}
     <div class="modal-title">${t.name}</div>
     <div class="modal-area">${t.area} · ${t.drive}</div>
     ${t.warning?`<div class="notice notice-warn" style="margin:0 0 .875rem"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#856404" stroke-width="1.8"><circle cx="8" cy="8" r="7"/><path d="M8 5v3.5"/><circle cx="8" cy="11.5" r=".5" fill="#856404"/></svg>Check track status before visiting — Kauri Dieback or storm closures may apply.</div>`:''}
@@ -584,7 +646,8 @@ function openTrail(id){
       <a class="btn-map" href="${mapsUrl}" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>Driving directions</a>
       <button class="btn-gps" onclick="startTracking('${t.id}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg>Start GPS tracking</button>
       <button class="btn-primary" onclick="logFromModal()">Log this hike</button>
-          </div>`;
+      <button class="btn-secondary" onclick="closeModal()">Close</button>
+    </div>`;
   document.getElementById('trail-modal').classList.add('open');
 }
 
@@ -780,7 +843,7 @@ function showPage(name){
   document.getElementById('page-'+name).classList.add('active');
   document.querySelector(`.nav-tab[onclick="showPage('${name}')"]`).classList.add('active');
   if(name==='log')renderLog();
-  if(name==='map'){setTimeout(()=>{initMap();if(map){map.invalidateSize();map.setView([-36.75,174.7],10);}},300)}
+  if(name==='map'){setTimeout(()=>{initMap();if(map)map.invalidateSize()},100)}
 }
 
 document.getElementById('filter-bar').addEventListener('click',e=>{
@@ -795,6 +858,15 @@ document.getElementById('filter-bar').addEventListener('click',e=>{
 document.getElementById('log-trail-select').innerHTML='<option value="">Select a trail…</option>'+trails.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
 document.getElementById('log-date').valueAsDate=new Date();
 renderTrails();renderLog();fetchWeather();
+// Wait for Google Maps to load, then fetch photos
+function waitForGoogle(){
+  if(typeof google!=='undefined'&&google.maps&&google.maps.places){
+    loadAllPhotos();
+  }else{
+    setTimeout(waitForGoogle,500);
+  }
+}
+waitForGoogle();
 </script>
 </body>
 </html>
