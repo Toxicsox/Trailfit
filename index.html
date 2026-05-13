@@ -531,7 +531,10 @@ function computeSuggestion(){
 function openSuggestion(){if(suggestionTrail)openTrail(suggestionTrail.id)}
 
 // ── PHOTOS (Google Places) ──
-const photoCache=JSON.parse(localStorage.getItem('trailfit-photos')||'{}');
+localStorage.removeItem('trailfit-photos');
+const _PHOTO_CACHE_KEY='trailfit-photos-v2';
+const _PHOTO_TTL=14*24*60*60*1000;
+const photoCache=(function(){const raw=JSON.parse(localStorage.getItem(_PHOTO_CACHE_KEY)||'{}');const now=Date.now();const valid={};for(const [id,e]of Object.entries(raw)){if(e.ts&&(now-e.ts)<_PHOTO_TTL)valid[id]=e;}return valid;})();
 let placesService=null;
 
 function initPlaces(){
@@ -555,14 +558,26 @@ async function fetchTrailPhoto(trail){
       if(status==='OK'&&results&&results[0]&&results[0].photos&&results[0].photos[0]){
         const url=results[0].photos[0].getUrl({maxWidth:800,maxHeight:600});
         const attrib=results[0].photos[0].html_attributions&&results[0].photos[0].html_attributions[0]?results[0].photos[0].html_attributions[0].replace(/<[^>]+>/g,''):'';
-        photoCache[trail.id]={url,attrib};
-        try{localStorage.setItem('trailfit-photos',JSON.stringify(photoCache))}catch(e){}
+        photoCache[trail.id]={url,attrib,ts:Date.now()};
+        try{localStorage.setItem(_PHOTO_CACHE_KEY,JSON.stringify(photoCache))}catch(e){}
         resolve(photoCache[trail.id]);
       }else{
         resolve(null);
       }
     });
   });
+}
+
+async function healPhoto(trailId){
+  delete photoCache[trailId];
+  try{localStorage.setItem(_PHOTO_CACHE_KEY,JSON.stringify(photoCache))}catch(e){}
+  const trail=trails.find(t=>t.id===trailId);
+  if(!trail)return;
+  await fetchTrailPhoto(trail);
+  const entry=photoCache[trailId];
+  if(!entry)return;
+  const cardPhoto=document.querySelector(`[data-trail-photo="${trailId}"]`);
+  if(cardPhoto){cardPhoto.style.backgroundImage=`url(${entry.url})`;cardPhoto.classList.remove('placeholder');}
 }
 
 async function loadAllPhotos(){
@@ -577,6 +592,9 @@ async function loadAllPhotos(){
       }
       // Small delay to be nice to the API
       await new Promise(r=>setTimeout(r,200));
+    }else{
+      // Probe cached URL; heal if it has expired server-side
+      (function(id,url){const img=new Image();img.onerror=()=>healPhoto(id);img.src=url;})(trail.id,photoCache[trail.id].url);
     }
   }
 }
