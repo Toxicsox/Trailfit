@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TrailFit — Auckland Hiking Trails</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5-2q8eAZxwiOvbl7q2lr0JBKAsozGs_c&libraries=places,maps&loading=async"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5-2q8eAZxwiOvbl7q2lr0JBKAsozGs_c&loading=async"></script>
 <style>
 :root{--forest:#0f2535;--moss:#1b4d6b;--fern:#2a7a9a;--sage:#6aafc4;--mist:#b8d9e8;--cream:#f0f5f8;--sand:#daeaf2;--stone:#7a9aaa;--cliff:#2a4555;--ocean:#1a6585;--gold:#c8921e;--alert:#c04030}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -543,37 +543,29 @@ localStorage.removeItem('trailfit-photos');
 const _PHOTO_CACHE_KEY='trailfit-photos-v2';
 const _PHOTO_TTL=14*24*60*60*1000;
 const photoCache=(function(){const raw=JSON.parse(localStorage.getItem(_PHOTO_CACHE_KEY)||'{}');const now=Date.now();const valid={};for(const [id,e]of Object.entries(raw)){if(e.ts&&(now-e.ts)<_PHOTO_TTL)valid[id]=e;}return valid;})();
-let placesService=null;
-
-function initPlaces(){
-  if(placesService)return placesService;
-  if(typeof google==='undefined'||!google.maps||!google.maps.places)return null;
-  // Hidden div needed for PlacesService
-  const div=document.createElement('div');
-  placesService=new google.maps.places.PlacesService(div);
-  return placesService;
-}
+function initPlaces(){}
 
 async function fetchTrailPhoto(trail){
   if(photoCache[trail.id])return photoCache[trail.id];
-  const svc=initPlaces();
-  if(!svc)return null;
-  return new Promise(resolve=>{
-    svc.findPlaceFromQuery({
-      query:trail.name+' Auckland',
-      fields:['place_id','photos','name']
-    },(results,status)=>{
-      if(status==='OK'&&results&&results[0]&&results[0].photos&&results[0].photos[0]){
-        const url=results[0].photos[0].getUrl({maxWidth:800,maxHeight:600});
-        const attrib=results[0].photos[0].html_attributions&&results[0].photos[0].html_attributions[0]?results[0].photos[0].html_attributions[0].replace(/<[^>]+>/g,''):'';
-        photoCache[trail.id]={url,attrib,ts:Date.now()};
-        try{localStorage.setItem(_PHOTO_CACHE_KEY,JSON.stringify(photoCache))}catch(e){}
-        resolve(photoCache[trail.id]);
-      }else{
-        resolve(null);
-      }
+  try{
+    const {Place}=await google.maps.importLibrary("places");
+    const {places}=await Place.searchByText({
+      textQuery:trail.name+' Auckland',
+      fields:['displayName','photos','id'],
+      maxResultCount:1,
+      region:'nz'
     });
-  });
+    if(places&&places[0]&&places[0].photos&&places[0].photos[0]){
+      const url=places[0].photos[0].getURI({maxWidth:800,maxHeight:600});
+      const attrib=places[0].photos[0].authorAttributions&&places[0].photos[0].authorAttributions[0]?places[0].photos[0].authorAttributions[0].displayName:'';
+      photoCache[trail.id]={url,attrib,ts:Date.now()};
+      try{localStorage.setItem(_PHOTO_CACHE_KEY,JSON.stringify(photoCache))}catch(e){}
+      return photoCache[trail.id];
+    }
+    return null;
+  }catch(e){
+    return null;
+  }
 }
 
 async function healPhoto(trailId){
@@ -971,7 +963,7 @@ document.getElementById('log-date').valueAsDate=new Date();
 renderTrails();renderLog();fetchWeather();
 // Wait for Google Maps to load, then fetch photos
 function waitForGoogle(){
-  if(typeof google!=='undefined'&&google.maps&&google.maps.places){
+  if(typeof google!=='undefined'&&google.maps&&google.maps.importLibrary){
     loadAllPhotos();
   }else{
     setTimeout(waitForGoogle,500);
