@@ -556,7 +556,7 @@ async function fetchTrailPhoto(trail){
       region:'nz'
     });
     if(places&&places[0]&&places[0].photos&&places[0].photos[0]){
-      const url=places[0].photos[0].getURI({maxWidth:800,maxHeight:600});
+      const url=places[0].photos[0].getURI({maxWidthPx:800,maxHeightPx:600});
       const attrib=places[0].photos[0].authorAttributions&&places[0].photos[0].authorAttributions[0]?places[0].photos[0].authorAttributions[0].displayName:'';
       photoCache[trail.id]={url,attrib,ts:Date.now()};
       try{localStorage.setItem(_PHOTO_CACHE_KEY,JSON.stringify(photoCache))}catch(e){}
